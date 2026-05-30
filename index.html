@@ -212,14 +212,28 @@ select.flt:focus{border-color:var(--gold);}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
-/* ── MOBILE TOOLBAR FIX ── */
-@media(max-width:600px){
-  .toolbar{padding:9px 14px;gap:8px;}
-  .search-wrap{max-width:100%;flex:1 1 100%;}
-  select.flt{flex:1 1 auto;min-width:0;}
-  #f-sort{flex:1 1 auto;min-width:0;}
-  .view-tog{margin-left:0;}
+/* ── HELP MODAL ── */
+.help-modal{
+  background:var(--cream);border:1px solid var(--border);border-radius:4px;
+  width:100%;max-width:620px;max-height:92vh;overflow-y:auto;animation:mi .19s ease;
 }
+.help-modal .hm-hdr{
+  font-family:'Playfair Display',serif;font-size:1.25rem;
+  padding:18px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--cream);z-index:1;
+}
+.help-modal .hm-body{padding:20px 22px 26px;}
+.help-modal h3{font-family:'Playfair Display',serif;font-size:1rem;margin:22px 0 8px;color:var(--ink);}
+.help-modal h3:first-child{margin-top:0;}
+.help-modal p,.help-modal li{font-size:.86rem;color:var(--muted);line-height:1.7;}
+.help-modal ul{padding-left:18px;margin-bottom:8px;}
+.help-modal strong{color:var(--ink);}
+.help-modal .tip{
+  background:var(--parchment);border-left:3px solid var(--gold);
+  padding:10px 14px;margin:12px 0;font-size:.83rem;color:var(--muted);line-height:1.65;
+}
+.help-modal hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
 </style>
 </head>
 <body>
@@ -233,6 +247,7 @@ select.flt:focus{border-color:var(--gold);}
     <button class="btn btn-outline" onclick="exportBackup()">⬇ Export</button>
     <button class="btn btn-danger" onclick="clearAll()">🗑 Clear All</button>
     <button class="btn btn-gold" onclick="openForm(null)">+ Add Pen</button>
+    <button class="btn btn-ghost" onclick="openHelp()" title="Help">?</button>
   </div>
 </header>
 
@@ -366,6 +381,79 @@ select.flt:focus{border-color:var(--gold);}
     <div class="imp-res" id="imp-res"></div>
     <div class="imp-actions">
       <button class="btn btn-ghost" onclick="closeImport()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HELP OVERLAY ══ -->
+<div class="overlay" id="ov-help" onclick="overlayClick(event,'ov-help',closeHelp)">
+  <div class="help-modal">
+    <div class="hm-hdr">
+      How to use Pen Collection
+      <button class="x-btn" onclick="closeHelp()">✕</button>
+    </div>
+    <div class="hm-body">
+
+      <h3>What is this?</h3>
+      <p>Pen Collection is a personal inventory app for tracking your pen collection. Everything is stored privately in your browser — no account, no server, no internet connection needed after the page loads.</p>
+
+      <hr>
+
+      <h3>Adding a pen</h3>
+      <p>Click <strong>+ Add Pen</strong> in the top right. You can upload up to 3 photos per pen — the first photo becomes the cover image shown in the grid. Then fill in as many or as few fields as you like:</p>
+      <ul>
+        <li>Brand and model</li>
+        <li>Pen type, refill / nib type, tip size and material</li>
+        <li>Barrel and hardware materials, colors, length</li>
+        <li>Tags, storage location</li>
+        <li>Purchase source, date, and price</li>
+        <li>Notes (ink currently loaded, impressions, history, etc.)</li>
+      </ul>
+      <div class="tip">📱 <strong>On a phone</strong> — tapping the photo area will let you take a photo with your camera or choose one from your gallery, making it easy to photograph a pen and add it on the spot.</div>
+
+      <hr>
+
+      <h3>Browsing your collection</h3>
+      <p>Use the toolbar to search, filter, and sort your pens. Switch between <strong>grid view</strong> (photo cards) and <strong>list view</strong> (compact table) using the buttons on the right of the toolbar. Click any pen to see its full details, and use the <strong>Edit</strong> or <strong>Delete</strong> buttons from the detail view.</p>
+
+      <hr>
+
+      <h3>Importing from the Pens app</h3>
+      <p>If you have an existing collection in the <strong>Pens app</strong>, you can import it directly:</p>
+      <ul>
+        <li>In the Pens app, go to <strong>Settings → Export → HTML</strong></li>
+        <li>Save the exported <code>.html</code> file to your device</li>
+        <li>In Pen Collection, tap <strong>⬆ Import</strong> and select the file</li>
+        <li>All your pens and photos will be imported automatically</li>
+      </ul>
+
+      <hr>
+
+      <h3>Backup and restore</h3>
+      <p>Your data lives in your browser's local storage, which means it can be lost if you clear your browser data. <strong>Export a backup regularly.</strong></p>
+      <ul>
+        <li><strong>To back up:</strong> click <strong>⬇ Export</strong> — this downloads a <code>.json</code> file with all your pens and photos included.</li>
+        <li><strong>To restore:</strong> click <strong>⬆ Import</strong> and select your <code>.json</code> backup file. Existing pens are matched by ID so there will be no duplicates.</li>
+      </ul>
+
+      <hr>
+
+      <h3>Moving your collection to another device</h3>
+      <ul>
+        <li>Export a backup on your current device</li>
+        <li>Transfer the <code>.json</code> file to the new device (email, cloud storage, cable, etc.)</li>
+        <li>Open the app on the new device and tap <strong>⬆ Import</strong></li>
+      </ul>
+      <div class="tip">📱 <strong>Android tip</strong> — save the <code>.json</code> file to your <strong>Downloads</strong> folder before importing. Chrome on Android works most reliably with files in Downloads rather than cloud storage locations.</div>
+
+      <hr>
+
+      <h3>Clearing all data</h3>
+      <p>The <strong>🗑 Clear All</strong> button removes every pen from this device. This is useful when testing an import or starting fresh. Make sure you have an exported backup before using it — it cannot be undone.</p>
+
+    </div>
+    <div style="padding:0 22px 20px;">
+      <button class="btn btn-gold" onclick="closeHelp()">Got it</button>
     </div>
   </div>
 </div>
@@ -742,6 +830,8 @@ function clearAll(){
 // UTILITIES
 // ═══════════════════════════════
 function overlayClick(e,id,fn){ if(e.target.id===id) fn(); }
+function openHelp(){ document.getElementById('ov-help').classList.add('open'); }
+function closeHelp(){ document.getElementById('ov-help').classList.remove('open'); }
 function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg; el.classList.add('show');
