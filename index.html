@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pen Collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1208; --parchment:#f5f0e8; --cream:#faf7f2;
+  --gold:#b8860b; --gold-lt:#d4a017; --rust:#7a2e10;
+  --sage:#4e6a4a; --muted:#7a6e5a; --border:#d8cebc;
+  --shadow:rgba(26,18,8,.12); --white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* ── HEADER ── */
+header{
+  background:var(--ink);color:var(--parchment);
+  padding:20px 36px;display:flex;align-items:center;gap:18px;
+  position:sticky;top:0;z-index:200;box-shadow:0 2px 14px var(--shadow);
+}
+header h1{font-family:'Playfair Display',serif;font-size:1.7rem;letter-spacing:.02em;white-space:nowrap;}
+header h1 em{font-style:italic;color:var(--gold-lt);}
+.pen-count{font-family:'DM Mono',monospace;font-size:.73rem;color:var(--gold-lt);opacity:.8;letter-spacing:.06em;white-space:nowrap;}
+.hdr-actions{margin-left:auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+
+/* ── BUTTONS ── */
+.btn{font-family:'DM Mono',monospace;font-size:.71rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 16px;border:none;cursor:pointer;transition:all .17s;border-radius:2px;line-height:1;}
+.btn-gold{background:var(--gold);color:var(--ink);}
+.btn-gold:hover{background:var(--gold-lt);}
+.btn-outline{background:transparent;color:var(--gold-lt);border:1px solid var(--gold);}
+.btn-outline:hover{background:rgba(184,134,11,.15);}
+.btn-ghost{background:transparent;color:#aaa;border:1px solid #555;}
+.btn-ghost:hover{background:rgba(255,255,255,.08);}
+.btn-danger{background:rgba(122,46,16,.15);color:#e08070;border:1px solid #7a2e10;}
+.btn-danger:hover{background:rgba(122,46,16,.3);}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  background:var(--parchment);border-bottom:1px solid var(--border);
+  padding:11px 36px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.search-wrap{position:relative;flex:1;min-width:160px;max-width:310px;}
+.search-wrap input{
+  width:100%;padding:8px 10px 8px 32px;border:1px solid var(--border);
+  background:var(--cream);font-family:'DM Sans',sans-serif;font-size:.875rem;
+  color:var(--ink);border-radius:2px;outline:none;
+}
+.search-wrap input:focus{border-color:var(--gold);}
+.s-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;pointer-events:none;}
+select.flt{
+  padding:7px 9px;border:1px solid var(--border);background:var(--cream);
+  font-family:'DM Mono',monospace;font-size:.71rem;letter-spacing:.04em;
+  color:var(--ink);border-radius:2px;outline:none;cursor:pointer;
+}
+select.flt:focus{border-color:var(--gold);}
+.view-tog{margin-left:auto;display:flex;gap:3px;}
+.vbtn{padding:6px 10px;background:transparent;border:1px solid var(--border);
+  cursor:pointer;font-size:.85rem;color:var(--muted);border-radius:2px;transition:all .14s;}
+.vbtn.active{background:var(--ink);color:var(--gold-lt);border-color:var(--ink);}
+
+/* ── EMPTY ── */
+#empty{text-align:center;padding:80px 40px;color:var(--muted);}
+#empty .iq{font-size:3.5rem;margin-bottom:14px;opacity:.22;}
+#empty h2{font-family:'Playfair Display',serif;font-size:1.35rem;margin-bottom:10px;color:var(--ink);opacity:.5;}
+#empty p{font-size:.87rem;max-width:350px;margin:0 auto 22px;line-height:1.7;}
+#empty .empty-btns{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;}
+
+/* ── GRID ── */
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px;padding:26px 36px;}
+
+.card{
+  background:var(--white);border:1px solid var(--border);border-radius:3px;
+  overflow:hidden;cursor:pointer;transition:transform .17s,box-shadow .17s;
+  animation:fu .26s ease;
+}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px var(--shadow);}
+@keyframes fu{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:translateY(0);}}
+
+.card-img{height:148px;background:var(--parchment);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.card-img img{width:100%;height:100%;object-fit:contain;padding:7px;}
+.card-img .more{
+  position:absolute;bottom:5px;right:7px;
+  background:rgba(26,18,8,.55);color:#fff;
+  font-family:'DM Mono',monospace;font-size:.6rem;padding:2px 6px;border-radius:9px;
+}
+.no-img{font-size:2rem;color:var(--border);}
+
+.card-body{padding:12px 14px 14px;}
+.card-brand{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
+.card-model{font-family:'Playfair Display',serif;font-size:.98rem;margin-bottom:7px;line-height:1.25;}
+.card-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.chip{font-family:'DM Mono',monospace;font-size:.58rem;padding:2px 6px;border-radius:2px;letter-spacing:.04em;background:var(--parchment);color:var(--muted);border:1px solid var(--border);}
+.chip.type{background:#eef3ec;color:var(--sage);border-color:#c0d4bc;}
+.card-meta{font-size:.73rem;color:var(--muted);line-height:1.6;}
+
+/* ── LIST ── */
+#list{padding:22px 36px;}
+.ltbl{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.ltbl th{background:var(--ink);color:var(--parchment);font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:10px 13px;text-align:left;font-weight:400;}
+.ltbl td{padding:9px 13px;border-bottom:1px solid var(--border);font-size:.82rem;vertical-align:middle;}
+.ltbl tr:last-child td{border-bottom:none;}
+.ltbl tbody tr:hover td{background:var(--parchment);cursor:pointer;}
+.lthumb{width:42px;height:30px;object-fit:contain;background:var(--parchment);border-radius:2px;vertical-align:middle;}
+.lph{width:42px;height:30px;background:var(--parchment);border-radius:2px;display:inline-flex;align-items:center;justify-content:center;color:var(--border);font-size:.75rem;vertical-align:middle;}
+
+/* ── OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(20,14,5,.78);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+
+/* ── DETAIL MODAL ── */
+.det-modal{
+  background:var(--cream);border:1px solid var(--border);border-radius:4px;
+  width:100%;max-width:830px;max-height:91vh;overflow-y:auto;
+  animation:mi .19s ease;
+}
+@keyframes mi{from{opacity:0;transform:scale(.97);}to{opacity:1;transform:scale(1);}}
+.det-photos{
+  display:flex;gap:10px;padding:18px 22px 14px;
+  background:var(--parchment);border-bottom:1px solid var(--border);
+  overflow-x:auto;min-height:150px;align-items:center;
+}
+.det-photos img{height:155px;width:auto;max-width:260px;object-fit:contain;border-radius:2px;flex-shrink:0;}
+.det-nophoto{color:var(--border);font-size:2.8rem;width:100%;text-align:center;}
+.det-hdr{padding:18px 22px 0;display:flex;justify-content:space-between;align-items:flex-start;}
+.det-brand{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
+.det-model{font-family:'Playfair Display',serif;font-size:1.55rem;}
+.det-body{padding:14px 22px 22px;}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px;margin-top:14px;}
+.df .dl{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.df .dv{font-size:.86rem;}
+.det-notes{grid-column:1/-1;border-top:1px solid var(--border);padding-top:13px;margin-top:3px;}
+.det-foot{padding:0 22px 20px;display:flex;gap:9px;}
+.x-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.15rem;line-height:1;padding:4px;}
+.x-btn:hover{color:var(--ink);}
+
+/* ── ADD / EDIT MODAL ── */
+.form-modal{
+  background:var(--cream);border:1px solid var(--border);border-radius:4px;
+  width:100%;max-width:680px;max-height:93vh;overflow-y:auto;
+  animation:mi .19s ease;
+}
+.fm-hdr{font-family:'Playfair Display',serif;font-size:1.25rem;padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+
+/* photo upload */
+.photo-section{padding:16px 22px;border-bottom:1px solid var(--border);}
+.photo-section h3{font-family:'DM Mono',monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:11px;}
+.dropzone{
+  border:2px dashed var(--border);border-radius:3px;padding:24px;
+  text-align:center;cursor:pointer;transition:border-color .17s,background .17s;
+  color:var(--muted);font-size:.84rem;
+}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--gold);background:rgba(184,134,11,.04);}
+.dropzone .dz-icon{font-size:1.7rem;display:block;margin-bottom:7px;}
+.dropzone small{display:block;margin-top:5px;font-size:.73rem;opacity:.7;}
+#pfile{display:none;}
+.previews{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px;}
+.thumb-wrap{position:relative;width:86px;height:66px;}
+.thumb-wrap img{width:100%;height:100%;object-fit:contain;background:var(--parchment);border:1px solid var(--border);border-radius:2px;}
+.rm-photo{position:absolute;top:-6px;right:-6px;width:17px;height:17px;
+  background:var(--rust);color:#fff;border:none;border-radius:50%;
+  cursor:pointer;font-size:.6rem;line-height:17px;text-align:center;padding:0;}
+
+/* form fields */
+.form-fields{padding:14px 22px 8px;display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.fg{display:flex;flex-direction:column;gap:3px;}
+.fg.full{grid-column:1/-1;}
+.fg label{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+.fg input,.fg select,.fg textarea{
+  padding:8px 10px;border:1px solid var(--border);background:var(--white);
+  font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--ink);
+  border-radius:2px;outline:none;transition:border-color .14s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
+.fg textarea{resize:vertical;min-height:72px;}
+.fm-foot{padding:14px 22px 20px;display:flex;gap:9px;border-top:1px solid var(--border);}
+
+/* ── IMPORT MODAL ── */
+.imp-modal{
+  background:var(--cream);border:1px solid var(--border);border-radius:4px;
+  width:100%;max-width:460px;padding:22px;animation:mi .19s ease;
+}
+.imp-modal h2{font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:6px;}
+.imp-modal p{font-size:.84rem;color:var(--muted);margin-bottom:18px;line-height:1.65;}
+.imp-label{
+  display:block;border:2px dashed var(--border);border-radius:3px;padding:30px;
+  text-align:center;cursor:pointer;transition:border-color .17s,background .17s;color:var(--muted);
+}
+.imp-label:hover,.imp-label.drag-over{border-color:var(--gold);background:rgba(184,134,11,.04);}
+.imp-label .id-icon{font-size:1.9rem;display:block;margin-bottom:9px;}
+.imp-label input[type="file"]{display:none;}
+.imp-res{margin-top:12px;padding:11px;border-radius:2px;font-size:.82rem;text-align:center;display:none;}
+.imp-res.ok{background:#eef4ec;color:#3a6332;border:1px solid #b8d8b2;}
+.imp-res.err{background:#fdf0ee;color:#8b3a1a;border:1px solid #e0b8b0;}
+.imp-actions{display:flex;gap:9px;margin-top:14px;justify-content:flex-end;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:22px;right:22px;z-index:999;
+  background:var(--ink);color:var(--parchment);
+  padding:11px 18px;border-radius:3px;font-size:.8rem;font-family:'DM Mono',monospace;
+  box-shadow:0 4px 16px var(--shadow);opacity:0;transform:translateY(8px);
+  transition:all .23s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ── MOBILE TOOLBAR FIX ── */
+@media(max-width:600px){
+  .toolbar{padding:9px 14px;gap:8px;}
+  .search-wrap{max-width:100%;flex:1 1 100%;}
+  select.flt{flex:1 1 auto;min-width:0;}
+  #f-sort{flex:1 1 auto;min-width:0;}
+  .view-tog{margin-left:0;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>Pen <em>Collection</em></h1>
+  <span class="pen-count" id="pen-count"></span>
+  <div class="hdr-actions">
+    <button class="btn btn-outline" onclick="openImport()">⬆ Import</button>
+    <button class="btn btn-outline" onclick="exportBackup()">⬇ Export</button>
+    <button class="btn btn-danger" onclick="clearAll()">🗑 Clear All</button>
+    <button class="btn btn-gold" onclick="openForm(null)">+ Add Pen</button>
+  </div>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="q" placeholder="Search brand, model, notes…" oninput="renderAll()">
+  </div>
+  <select class="flt" id="f-type" onchange="renderAll()"><option value="">All types</option></select>
+  <select class="flt" id="f-brand" onchange="renderAll()"><option value="">All brands</option></select>
+  <select class="flt" id="f-sort" onchange="renderAll()">
+    <option value="added-desc">Date added (newest)</option>
+    <option value="added-asc">Date added (oldest)</option>
+    <option value="brand-asc">Brand (A–Z)</option>
+    <option value="brand-desc">Brand (Z–A)</option>
+    <option value="model-asc">Model (A–Z)</option>
+    <option value="model-desc">Model (Z–A)</option>
+    <option value="date-desc">Purchase date (newest)</option>
+    <option value="date-asc">Purchase date (oldest)</option>
+  </select>
+  <div class="view-tog">
+    <button class="vbtn active" id="vg" onclick="setView('grid')" title="Grid">⊞</button>
+    <button class="vbtn" id="vl" onclick="setView('list')" title="List">☰</button>
+  </div>
+</div>
+
+<!-- EMPTY -->
+<div id="empty">
+  <div class="iq">✒️</div>
+  <h2>Your collection awaits</h2>
+  <p>Import an HTML export from the Pens app, or add your first pen manually.</p>
+  <div class="empty-btns">
+    <button class="btn btn-outline" onclick="openImport()">⬆ Import from Pens app</button>
+    <button class="btn btn-gold" onclick="openForm(null)">+ Add pen manually</button>
+  </div>
+</div>
+
+<!-- GRID -->
+<div id="grid" style="display:none"></div>
+
+<!-- LIST -->
+<div id="list" style="display:none">
+  <table class="ltbl">
+    <thead><tr>
+      <th>Photo</th><th>Brand</th><th>Model</th><th>Type</th>
+      <th>Refill / Nib</th><th>Barrel</th><th>Date</th><th>Price</th>
+    </tr></thead>
+    <tbody id="list-body"></tbody>
+  </table>
+</div>
+
+<!-- ══ DETAIL OVERLAY ══ -->
+<div class="overlay" id="ov-det" onclick="overlayClick(event,'ov-det',closeDet)">
+  <div class="det-modal">
+    <div class="det-photos" id="d-photos"></div>
+    <div class="det-hdr">
+      <div>
+        <div class="det-brand" id="d-brand"></div>
+        <div class="det-model" id="d-model"></div>
+      </div>
+      <button class="x-btn" onclick="closeDet()">✕</button>
+    </div>
+    <div class="det-body">
+      <div class="det-grid" id="d-grid"></div>
+    </div>
+    <div class="det-foot">
+      <button class="btn btn-outline" id="d-edit">✏ Edit</button>
+      <button class="btn btn-danger" id="d-del">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD/EDIT OVERLAY ══ -->
+<div class="overlay" id="ov-form" onclick="overlayClick(event,'ov-form',closeForm)">
+  <div class="form-modal">
+    <div class="fm-hdr">
+      <span id="fm-title">Add Pen</span>
+      <button class="x-btn" onclick="closeForm()">✕</button>
+    </div>
+
+    <div class="photo-section">
+      <h3>Photos <span style="opacity:.5;font-size:.85em;">(up to 3 — first is the cover)</span></h3>
+      <div class="dropzone" id="dz"
+        onclick="document.getElementById('pfile').click()"
+        ondragover="dzOver(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)">
+        <span class="dz-icon">📷</span>
+        Click or drag photos here
+        <small>JPEG · PNG · WEBP</small>
+      </div>
+      <input type="file" id="pfile" accept="image/*" multiple onchange="addPhotos(this.files)">
+      <div class="previews" id="previews"></div>
+    </div>
+
+    <div class="form-fields">
+      <div class="fg"><label>Brand</label><input id="fi-brand" type="text" placeholder="e.g. Pilot"></div>
+      <div class="fg"><label>Model</label><input id="fi-model" type="text" placeholder="e.g. Custom 823"></div>
+      <div class="fg"><label>Pen Type</label><input id="fi-type" type="text" placeholder="e.g. Fountain, Rollerball…"></div>
+      <div class="fg"><label>Refill / Nib Type</label><input id="fi-refill" type="text" placeholder="e.g. Fine nib, Cartridge…"></div>
+      <div class="fg"><label>Tip Size</label><input id="fi-tipsize" type="text" placeholder="e.g. F, M, B, 1.1mm"></div>
+      <div class="fg"><label>Tip Material</label><input id="fi-tipmaterial" type="text" placeholder="e.g. 14k Gold, Steel"></div>
+      <div class="fg"><label>Barrel Material</label><input id="fi-barrel" type="text" placeholder="e.g. Resin, Ebonite"></div>
+      <div class="fg"><label>Hardware Material</label><input id="fi-hardware" type="text" placeholder="e.g. Gold-plated, Rhodium"></div>
+      <div class="fg"><label>Colors</label><input id="fi-colors" type="text" placeholder="e.g. Navy, Tortoiseshell"></div>
+      <div class="fg"><label>Length</label><input id="fi-length" type="text" placeholder="e.g. 140mm capped"></div>
+      <div class="fg"><label>Tags</label><input id="fi-tags" type="text" placeholder="e.g. EDC, Vintage, Gift"></div>
+      <div class="fg"><label>Location / Storage</label><input id="fi-location" type="text" placeholder="e.g. Desk roll, Display case"></div>
+      <div class="fg"><label>Purchase Source</label><input id="fi-source" type="text" placeholder="e.g. Goulet Pens, eBay"></div>
+      <div class="fg"><label>Purchase Date</label><input id="fi-date" type="text" placeholder="e.g. 2024-03-15"></div>
+      <div class="fg"><label>Purchase Price</label><input id="fi-price" type="text" placeholder="e.g. $120.00"></div>
+      <div class="fg full"><label>Notes</label><textarea id="fi-notes" placeholder="Ink currently loaded, impressions, history…"></textarea></div>
+    </div>
+    <div class="fm-foot">
+      <button class="btn btn-gold" onclick="savePen()">Save Pen</button>
+      <button class="btn btn-ghost" onclick="closeForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPORT OVERLAY ══ -->
+<div class="overlay" id="ov-imp" onclick="overlayClick(event,'ov-imp',closeImport)">
+  <div class="imp-modal">
+    <h2>Import</h2>
+    <p>Choose a <strong>JSON backup</strong> exported from this app, or an <strong>HTML file</strong> exported from the Pens app. All pens and their embedded photos will be imported into your collection.</p>
+    <label class="imp-label" id="imp-drop"
+      ondragover="impOver(event)" ondragleave="impLeave()" ondrop="impDrop(event)">
+      <span class="id-icon">📄</span>
+      <strong>Tap or click to choose file</strong>
+      <input type="file" id="ifile" accept=".html,.htm,.json,text/html,application/json,text/plain" onchange="doImport(this.files[0])">
+    </label>
+    <div class="imp-res" id="imp-res"></div>
+    <div class="imp-actions">
+      <button class="btn btn-ghost" onclick="closeImport()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════
+// STATE
+// ═══════════════════════════════
+const KEY = 'pens_v1';
+let pens = [];
+let view = 'grid';
+let editId = null;
+let fPhotos = [];   // base64 strings being edited in form
+
+function load(){ try{ pens = JSON.parse(localStorage.getItem(KEY))||[]; }catch{ pens=[]; } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(pens)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function esc(s){ return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''; }
+
+// ═══════════════════════════════
+// RENDER
+// ═══════════════════════════════
+function renderAll(){
+  const q = document.getElementById('q').value.toLowerCase();
+  const ft = document.getElementById('f-type').value;
+  const fb = document.getElementById('f-brand').value;
+
+  // rebuild filter dropdowns
+  const types  = [...new Set(pens.map(p=>p.type).filter(Boolean))].sort();
+  const brands = [...new Set(pens.map(p=>p.brand).filter(Boolean))].sort();
+  const selType  = document.getElementById('f-type');
+  const selBrand = document.getElementById('f-brand');
+  selType.innerHTML  = '<option value="">All types</option>'  + types.map(t=>`<option${ft===t?' selected':''}>${esc(t)}</option>`).join('');
+  selBrand.innerHTML = '<option value="">All brands</option>' + brands.map(b=>`<option${fb===b?' selected':''}>${esc(b)}</option>`).join('');
+
+  const filtered = pens.filter(p=>{
+    const txt = [p.brand,p.model,p.notes,p.tags,p.type,p.barrel,p.colors,p.source,p.location].join(' ').toLowerCase();
+    if(q && !txt.includes(q)) return false;
+    if(ft && p.type!==ft) return false;
+    if(fb && p.brand!==fb) return false;
+    return true;
+  });
+
+  // sort
+  const sort = document.getElementById('f-sort').value;
+  filtered.sort((a,b)=>{
+    switch(sort){
+      case 'brand-asc':  return (a.brand||'').localeCompare(b.brand||'');
+      case 'brand-desc': return (b.brand||'').localeCompare(a.brand||'');
+      case 'model-asc':  return (a.model||'').localeCompare(b.model||'');
+      case 'model-desc': return (b.model||'').localeCompare(a.model||'');
+      case 'date-asc':   return (a.date||'').localeCompare(b.date||'');
+      case 'date-desc':  return (b.date||'').localeCompare(a.date||'');
+      case 'added-asc':  return (a.id||'').localeCompare(b.id||'');
+      default:           return (b.id||'').localeCompare(a.id||''); // added-desc
+    }
+  });
+
+  const cnt = pens.length;
+  document.getElementById('pen-count').textContent = cnt===1?'1 pen':`${cnt} pens`;
+
+  const empty = document.getElementById('empty');
+  const gridEl = document.getElementById('grid');
+  const listEl = document.getElementById('list');
+
+  if(cnt===0){ empty.style.display=''; gridEl.style.display='none'; listEl.style.display='none'; return; }
+  empty.style.display='none';
+
+  if(view==='grid'){
+    gridEl.style.display=''; listEl.style.display='none';
+    gridEl.innerHTML = filtered.map(cardHtml).join('');
+  } else {
+    gridEl.style.display='none'; listEl.style.display='';
+    document.getElementById('list-body').innerHTML = filtered.map(rowHtml).join('');
+  }
+}
+
+function cardHtml(p){
+  const ph = (p.photos||[]);
+  const imgPart = ph.length
+    ? `<img src="${ph[0]}" alt="">${ph.length>1?`<div class="more">+${ph.length-1}</div>`:''}`
+    : `<div class="no-img">✒</div>`;
+  const chips = [
+    p.type   ? `<span class="chip type">${esc(p.type)}</span>` : '',
+    p.refill ? `<span class="chip">${esc(p.refill)}</span>` : '',
+    p.tipSize? `<span class="chip">${esc(p.tipSize)}</span>` : '',
+  ].join('');
+  return `<div class="card" onclick="openDet('${p.id}')">
+    <div class="card-img">${imgPart}</div>
+    <div class="card-body">
+      <div class="card-brand">${esc(p.brand||'—')}</div>
+      <div class="card-model">${esc(p.model||'Unnamed pen')}</div>
+      <div class="card-chips">${chips}</div>
+      <div class="card-meta">
+        ${p.barrel?`<span>📦 ${esc(p.barrel)}</span>`:''}
+        ${p.date?`<span>📅 ${esc(p.date)}</span>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function rowHtml(p){
+  const ph = (p.photos||[]);
+  const thumb = ph.length ? `<img class="lthumb" src="${ph[0]}" alt="">` : `<div class="lph">✒</div>`;
+  return `<tr onclick="openDet('${p.id}')">
+    <td>${thumb}</td>
+    <td>${esc(p.brand||'—')}</td>
+    <td><strong>${esc(p.model||'Unnamed')}</strong></td>
+    <td>${esc(p.type||'—')}</td>
+    <td>${esc(p.refill||'—')}</td>
+    <td>${esc(p.barrel||'—')}</td>
+    <td>${esc(p.date||'—')}</td>
+    <td>${esc(p.price||'—')}</td>
+  </tr>`;
+}
+
+function setView(v){
+  view=v;
+  document.getElementById('vg').classList.toggle('active',v==='grid');
+  document.getElementById('vl').classList.toggle('active',v==='list');
+  renderAll();
+}
+
+// ═══════════════════════════════
+// DETAIL
+// ═══════════════════════════════
+let detId = null;
+function openDet(id){
+  detId=id;
+  const p = pens.find(x=>x.id===id); if(!p) return;
+  const ph = (p.photos||[]);
+  document.getElementById('d-photos').innerHTML = ph.length
+    ? ph.map(s=>`<img src="${s}" alt="">`).join('')
+    : `<div class="det-nophoto">✒</div>`;
+  document.getElementById('d-brand').textContent = p.brand||'';
+  document.getElementById('d-model').textContent = p.model||'Unnamed';
+
+  const fields=[
+    ['Pen Type',p.type],['Refill / Nib',p.refill],['Tip Size',p.tipSize],
+    ['Tip Material',p.tipMaterial],['Barrel Material',p.barrel],['Hardware',p.hardware],
+    ['Colors',p.colors],['Length',p.length],['Tags',p.tags],['Location',p.location],
+    ['Purchase Source',p.source],['Purchase Date',p.date],['Purchase Price',p.price],
+  ];
+  const g = document.getElementById('d-grid');
+  g.innerHTML = fields.filter(([,v])=>v).map(([l,v])=>`
+    <div class="df"><div class="dl">${l}</div><div class="dv">${esc(v)}</div></div>`).join('');
+  if(p.notes) g.innerHTML+=`<div class="df det-notes"><div class="dl">Notes</div><div class="dv">${esc(p.notes)}</div></div>`;
+
+  document.getElementById('d-edit').onclick = ()=>{ closeDet(); openForm(id); };
+  document.getElementById('d-del').onclick  = ()=>{ deletePen(id); };
+  document.getElementById('ov-det').classList.add('open');
+}
+function closeDet(){ document.getElementById('ov-det').classList.remove('open'); detId=null; }
+function deletePen(id){
+  if(!confirm('Delete this pen from your collection?')) return;
+  pens=pens.filter(p=>p.id!==id); save(); closeDet(); renderAll(); toast('Pen deleted.');
+}
+
+// ═══════════════════════════════
+// ADD / EDIT FORM
+// ═══════════════════════════════
+const FIELDS = [
+  ['brand','fi-brand'],['model','fi-model'],['type','fi-type'],['refill','fi-refill'],
+  ['tipSize','fi-tipsize'],['tipMaterial','fi-tipmaterial'],['barrel','fi-barrel'],['hardware','fi-hardware'],
+  ['colors','fi-colors'],['length','fi-length'],['tags','fi-tags'],['location','fi-location'],
+  ['source','fi-source'],['date','fi-date'],['price','fi-price'],['notes','fi-notes'],
+];
+
+function openForm(id){
+  editId=id||null; fPhotos=[]; photosLoading=0;
+  document.getElementById('previews').innerHTML='';
+  document.getElementById('pfile').value='';
+  FIELDS.forEach(([,fid])=>{ const el=document.getElementById(fid); if(el) el.value=''; });
+  document.getElementById('fm-title').textContent = id?'Edit Pen':'Add Pen';
+  setSaveBtn(true);
+
+  if(id){
+    const p=pens.find(x=>x.id===id);
+    if(p){
+      fPhotos=[...(p.photos||[])];
+      renderPreviews();
+      FIELDS.forEach(([key,fid])=>{ const el=document.getElementById(fid); if(el) el.value=p[key]||''; });
+    }
+  }
+  document.getElementById('ov-form').classList.add('open');
+}
+function closeForm(){ document.getElementById('ov-form').classList.remove('open'); editId=null; fPhotos=[]; photosLoading=0; }
+
+function savePen(){
+  if(photosLoading > 0){ toast('Please wait — photos are still loading.'); return; }
+  const p = { id: editId||uid(), photos:[...fPhotos] };
+  FIELDS.forEach(([key,fid])=>{ const el=document.getElementById(fid); p[key]=el?el.value.trim():''; });
+  if(editId){ const i=pens.findIndex(x=>x.id===editId); if(i!==-1) pens[i]=p; }
+  else pens.push(p);
+  save(); closeForm(); renderAll();
+  toast(editId?'Pen updated.':'Pen added to collection.');
+}
+
+// ═══════════════════════════════
+// PHOTOS
+// ═══════════════════════════════
+let photosLoading = 0;
+
+function setSaveBtn(enabled){
+  const btn = document.querySelector('.fm-foot .btn-gold');
+  if(!btn) return;
+  btn.disabled = !enabled;
+  btn.style.opacity = enabled ? '' : '0.45';
+  btn.textContent = enabled ? 'Save Pen' : 'Loading photos…';
+}
+
+function compressImage(file, callback){
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const MAX = 900;
+    let w = img.width, h = img.height;
+    if(w > MAX || h > MAX){
+      if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+      else { w = Math.round(w * MAX / h); h = MAX; }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.82));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); callback(null); };
+  img.src = url;
+}
+
+function addPhotos(files){
+  const rem = 3 - fPhotos.length;
+  if(rem <= 0){ toast('Maximum 3 photos per pen.'); return; }
+  const toAdd = Array.from(files).slice(0, rem);
+  photosLoading += toAdd.length;
+  setSaveBtn(false);
+  toAdd.forEach(f => {
+    compressImage(f, data => {
+      if(data) fPhotos.push(data);
+      photosLoading--;
+      renderPreviews();
+      if(photosLoading === 0) setSaveBtn(true);
+    });
+  });
+}
+
+function renderPreviews(){
+  document.getElementById('previews').innerHTML=fPhotos.map((s,i)=>`
+    <div class="thumb-wrap">
+      <img src="${s}" alt="">
+      <button class="rm-photo" onclick="rmPhoto(${i})">✕</button>
+    </div>`).join('');
+}
+function rmPhoto(i){ fPhotos.splice(i,1); renderPreviews(); }
+function dzOver(e){ e.preventDefault(); document.getElementById('dz').classList.add('drag-over'); }
+function dzLeave(){ document.getElementById('dz').classList.remove('drag-over'); }
+function dzDrop(e){ e.preventDefault(); document.getElementById('dz').classList.remove('drag-over'); addPhotos(e.dataTransfer.files); }
+
+// ═══════════════════════════════
+// IMPORT
+// ═══════════════════════════════
+function openImport(){ document.getElementById('ov-imp').classList.add('open'); }
+function closeImport(){
+  document.getElementById('ov-imp').classList.remove('open');
+  document.getElementById('imp-res').style.display='none';
+  const ifile = document.getElementById('ifile');
+  if(ifile) ifile.value='';
+}
+function impOver(e){ e.preventDefault(); document.getElementById('imp-drop').classList.add('drag-over'); }
+function impLeave(){ document.getElementById('imp-drop').classList.remove('drag-over'); }
+function impDrop(e){ e.preventDefault(); document.getElementById('imp-drop').classList.remove('drag-over'); if(e.dataTransfer.files[0]) doImport(e.dataTransfer.files[0]); }
+
+function doImport(file){
+  if(!file){ showImpRes('No file received. Try again.',false); return; }
+  showImpRes(`Reading "${file.name}" (${(file.size/1024).toFixed(0)} KB)…`, true);
+  const r=new FileReader();
+  r.onerror=()=>{ showImpRes('Could not read the file. On Android, try moving the file to your Downloads folder first, then importing from there.',false); };
+  r.onload=e=>{
+    const text = (e.target.result||'').trim();
+    if(!text){ showImpRes('File appears to be empty. Make sure the file transferred completely.',false); return; }
+    try{
+      if(text.startsWith('{') || text.startsWith('[')){
+        const obj = JSON.parse(text);
+        const imported = Array.isArray(obj) ? obj : (obj.pens || []);
+        if(!imported.length){ showImpRes('JSON parsed OK but no pens found inside.',false); return; }
+        imported.forEach(p=>{ if(!p.id) p.id=uid(); if(!p.photos) p.photos=[]; });
+        let added=0;
+        imported.forEach(p=>{
+          const dup=pens.find(x=>x.id===p.id);
+          if(!dup){ pens.push(p); added++; }
+        });
+        save(); renderAll();
+        const skipped=imported.length-added;
+        showImpRes(`✓ Restored ${added} pen${added!==1?'s':''}.${skipped?` (${skipped} already present, skipped)`:''}`,true);
+      } else {
+        const imported=parsePensHTML(text);
+        if(!imported.length){ showImpRes('No pens found. Make sure this is a Pens app HTML export or a JSON backup.',false); return; }
+        let added=0;
+        imported.forEach(p=>{
+          const dup=pens.find(x=>x.brand===p.brand&&x.model===p.model&&(x.photos[0]||'')===(p.photos[0]||''));
+          if(!dup){ pens.push(p); added++; }
+        });
+        save(); renderAll();
+        const skipped=imported.length-added;
+        showImpRes(`✓ Imported ${added} pen${added!==1?'s':''}.${skipped?` (${skipped} duplicate${skipped!==1?'s':''} skipped)`:''}`,true);
+      }
+    }catch(err){ showImpRes(`Parse error: ${err.message} — File size: ${(file.size/1024).toFixed(0)} KB, starts with: "${text.slice(0,40)}"`,false); }
+  };
+  r.readAsText(file,'UTF-8');
+}
+
+function parsePensHTML(html){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  const rows=doc.querySelectorAll('table.stash tr');
+  if(!rows.length) return [];
+  const result=[];
+  for(let i=1;i<rows.length;i++){
+    const cells=rows[i].querySelectorAll('td');
+    if(cells.length<4) continue;
+    const photos=[];
+    for(let pi=0;pi<3&&pi<cells.length;pi++){
+      const img=cells[pi].querySelector('img');
+      if(img&&img.src) photos.push(img.src);
+    }
+    const g=n=>(cells[3+n]?cells[3+n].textContent.trim():'');
+    result.push({
+      id:uid(), photos,
+      brand:g(0), model:g(1), type:g(2), refill:g(3), length:g(4),
+      colors:g(5), tags:g(6), barrel:g(7), tipMaterial:g(8), tipSize:g(9),
+      source:g(10), date:g(11), price:g(12), hardware:g(13), location:g(14), notes:g(15),
+    });
+  }
+  return result;
+}
+
+function showImpRes(msg,ok){
+  const el=document.getElementById('imp-res');
+  el.textContent=msg;
+  el.className='imp-res '+(ok?'ok':'err');
+  el.style.display='';
+}
+
+// ═══════════════════════════════
+// EXPORT
+// ═══════════════════════════════
+function exportBackup(){
+  if(!pens.length){ toast('Nothing to export yet.'); return; }
+  const data = JSON.stringify({ version:1, exported: new Date().toISOString(), pens }, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href     = url;
+  a.download = `pen-collection-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`Exported ${pens.length} pen${pens.length!==1?'s':''}.`);
+}
+
+function clearAll(){
+  if(!pens.length){ toast('Collection is already empty.'); return; }
+  if(!confirm(`Delete all ${pens.length} pen${pens.length!==1?'s':''} from this device? This cannot be undone. Make sure you have an exported backup first.`)) return;
+  pens=[];
+  save();
+  renderAll();
+  toast('Collection cleared.');
+}
+
+// ═══════════════════════════════
+// UTILITIES
+// ═══════════════════════════════
+function overlayClick(e,id,fn){ if(e.target.id===id) fn(); }
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+load(); renderAll();
+</script>
+</body>
+</html>
